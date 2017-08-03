@@ -7,7 +7,7 @@ public class EmployeeTest {
 
     @Test
     public void testEmployeeClass() {
-        Employee employee = new Employee("Employee Name");
+        Employee employee = new Employee("id","Employee Name");
         assertNotNull(employee);
     }
 
@@ -18,7 +18,7 @@ public class EmployeeTest {
         String name = "full_name";
         String newName = "new name";
 
-        Employee employee = new Employee(name);
+        Employee employee = new Employee("id", name);
         assertEquals(name, employee.getName());
         employee.setName(newName);
         assertEquals(newName, employee.getName());
@@ -28,7 +28,7 @@ public class EmployeeTest {
     public void testEmployeeTitle() {
         String title = "Director";
 
-        Employee employee = new Employee("Employee Name");
+        Employee employee = new Employee("id", "Employee Name");
         assertNull(employee.getTitle());
         employee.setTitle(title);
         assertEquals(title, employee.getTitle());
@@ -37,7 +37,7 @@ public class EmployeeTest {
 
     @Test
     public void testEmployeeStatus() {
-        Employee employee = new Employee("Employee Name");
+        Employee employee = new Employee("id", "Employee Name");
         assertNull(employee.getStatus());
         employee.setStatus(EmploymentStatus.FULL_TIME);
         assertEquals(EmploymentStatus.FULL_TIME, employee.getStatus());

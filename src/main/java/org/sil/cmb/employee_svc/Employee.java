@@ -2,6 +2,7 @@ package org.sil.cmb.employee_svc;
 
 public class Employee {
 
+    private final String id;
     private String name; // TODO given/surnames
     private EmploymentStatus status;
     private String title;
@@ -14,8 +15,13 @@ public class Employee {
     private String[] children;
     private boolean isStudent;
 
-    public Employee(String name) {
+    public Employee(String id, String name) {
         this.name = name;
+        this.id = id;
+    }
+
+    public String getId() {
+        return this.id;
     }
 
     public String getName() {

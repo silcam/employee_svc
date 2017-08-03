@@ -2,7 +2,9 @@ package org.sil.cmb.employee_svc;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Root resource (exposed at "myresource" path)
@@ -10,26 +12,37 @@ import java.util.ArrayList;
 @Path("/employee")
 public class EmployeeResource {
 
-    ArrayList<Employee> employees = new ArrayList<Employee>();
-
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String handleGet() {
-        return "getall";
+    public Response handleGet() {
+        Response response = Response.ok().entity(String.valueOf(EmployeeContainer.employees.size())).build();
+        return response;
     }
 
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String handleGetbyId(@PathParam("id") String id) {
-        return "get by id for " + id;
+    public Response handleGetbyId(@PathParam("id") String id) {
+        Employee employee = handleGetById(id);
+
+        if (employee == null) {
+            Response response = Response.status(404).build();
+            return response;
+        } else {
+            Response response = Response.ok().entity(employee.getName()).build();
+            return response;
+        }
     }
 
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String handlePut(@PathParam("id") String id) {
-        return "put to " + id;
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response handlePut(@PathParam("id") String id, String body) {
+        handleCreate(id, body);
+
+        Response response = Response.status(201).entity("created " + id).build();
+        return response;
     }
 
     @POST
@@ -43,9 +56,45 @@ public class EmployeeResource {
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String handleDelete(@PathParam("id") String id) {
-        return "delete for " + id;
-
+    public Response handleDelete(@PathParam("id") String id) {
+        Employee employee = handleDeleteById(id);
+        if (employee == null) {
+            Response response = Response.status(404).build();
+            return response;
+        } else {
+            Response response = Response.ok().entity("deleted " + id).build();
+            return response;
+        }
     }
 
+    private Employee handleGetById(String id) {
+        Iterator<Employee> employeesIter = EmployeeContainer.employees.iterator();
+
+        if (employeesIter.hasNext()) {
+            Employee employee = employeesIter.next();
+            if (id != null && id.equals(employee.getId())) {
+                return employee;
+            }
+        }
+        return null;
+    }
+
+    private Employee handleDeleteById(String id) {
+        Iterator<Employee> employeesIter = EmployeeContainer.employees.iterator();
+
+        if (employeesIter.hasNext()) {
+            Employee employee = employeesIter.next();
+            if (id != null && id.equals(employee.getId())) {
+                EmployeeContainer.employees.remove(employee);
+                return employee;
+            }
+        }
+        return null;
+    }
+
+
+    private void handleCreate(String id, String body) {
+        Employee employee = new Employee(id, body);
+        EmployeeContainer.employees.add(employee);
+    }
 }

@@ -5,9 +5,13 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.Test;
 
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
+
+import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,24 +28,50 @@ public class EmployeeResourceTests extends JerseyTest {
     }
 
     @Test
-    public void testGetAll() {
-        Response output = target("/employee").request().get();
+    public void testGetAllWithCreateAndDelete() {
+        String name = "testing name";
+        String id = "1234";
+
+        EmployeeContainer.employees = new ArrayList<Employee>();
+
+        Response output = target("/employee/").request().get();
         assertEquals(200, output.getStatus());
-        assertEquals("getall", output.readEntity(String.class));
+        assertEquals("0", output.readEntity(String.class));
+
+        output = target("/employee/" + id).request().put(Entity.json(new String(name)));
+        assertEquals(201, output.getStatus());
+        assertEquals("created " + id, output.readEntity(String.class));
+
+        output = target("/employee").request().get();
+        assertEquals(200, output.getStatus());
+        assertEquals("1", output.readEntity(String.class));
+
+        output = target("/employee/" + id).request().get();
+        assertEquals(200, output.getStatus());
+        assertEquals("testing name", output.readEntity(String.class));
+
+        output = target("/employee").request().get();
+        assertEquals(200, output.getStatus());
+        assertEquals("1", output.readEntity(String.class));
+
+        // clean up
+        output = target("/employee/" + id).request().delete();
+        assertEquals(200, output.getStatus());
+        assertEquals("deleted " + id, output.readEntity(String.class));
     }
 
     @Test
     public void testGetById() {
         Response output = target("/employee/1234").request().get();
-        assertEquals(200, output.getStatus());
-        assertEquals("get by id for 1234", output.readEntity(String.class));
+        assertEquals(404, output.getStatus());
+        assertEquals("", output.readEntity(String.class));
     }
 
     @Test
     public void testPut() {
         Response output = target("/employee/2345").request().put(Entity.json(new String()));
-        assertEquals(200, output.getStatus());
-        assertEquals("put to 2345", output.readEntity(String.class));
+        assertEquals(201, output.getStatus());
+        assertEquals("created 2345", output.readEntity(String.class));
     }
 
 
@@ -54,9 +84,8 @@ public class EmployeeResourceTests extends JerseyTest {
 
 
     @Test
-    public void testDelete() {
+    public void testDeleteNonExistentId() {
         Response output = target("/employee/4567").request().delete();
-        assertEquals(200, output.getStatus());
-        assertEquals("delete for 4567", output.readEntity(String.class));
+        assertEquals(404, output.getStatus());
     }
 }
