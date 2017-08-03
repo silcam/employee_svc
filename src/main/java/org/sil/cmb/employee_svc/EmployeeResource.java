@@ -1,26 +1,51 @@
 package org.sil.cmb.employee_svc;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 
 /**
  * Root resource (exposed at "myresource" path)
  */
-@Path("myresource")
+@Path("/employee")
 public class EmployeeResource {
 
-    /**
-     * Method handling HTTP GET requests. The returned object will be sent
-     * to the client as "text/plain" media type.
-     *
-     * @return String that will be returned as a text/plain response.
-     */
+    ArrayList<Employee> employees = new ArrayList<Employee>();
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String getIt() {
-
-        return "this is normal.";
+    public String handleGet() {
+        return "getall";
     }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String handleGetbyId(@PathParam("id") String id) {
+        return "get by id for " + id;
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String handlePut(@PathParam("id") String id) {
+        return "put to " + id;
+    }
+
+    @POST
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String handlePost(@PathParam("id") String id) {
+        return "post for " + id;
+    }
+
+
+    @DELETE
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String handleDelete(@PathParam("id") String id) {
+        return "delete for " + id;
+
+    }
+
 }
