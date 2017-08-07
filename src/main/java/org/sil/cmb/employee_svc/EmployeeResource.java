@@ -1,5 +1,6 @@
 package org.sil.cmb.employee_svc;
 
+import com.google.gson.Gson;
 import org.sil.cmb.employee_svc.model.Employee;
 
 import javax.ws.rs.*;
@@ -95,7 +96,13 @@ public class EmployeeResource {
 
 
     private void handleCreate(String id, String body) {
-        Employee employee = new Employee(id, body);
+        Employee employee = new Employee();
+        employee.setId(id);
+        employee.setName(body);
+
+//        Gson gson = new Gson();
+//        Employee employee = gson.fromJson(body, Employee.class);
+
         EmployeeContainer.employees.add(employee);
     }
 }

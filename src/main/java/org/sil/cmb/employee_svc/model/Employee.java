@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class Employee {
 
     @Id
-    private final String id;
+    private String id;
     private String name; // TODO given/surnames
     private EmploymentStatus status;
     private String title;
@@ -19,16 +19,14 @@ public class Employee {
     private Gender gender;
     private DateTime birthDate;
     private String CNPSno;
-    private MaritalStatus martialStatus;
+    private MaritalStatus maritalStatus;
     private ArrayList<String> children;
-
-    public Employee(String id, String name) {
-        this.name = name;
-        this.id = id;
-    }
 
     public String getId() {
         return this.id;
+    }
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -80,8 +78,8 @@ public class Employee {
     public String getCNPSno() { return this.CNPSno; }
     public void setCNPSno(String CNPSno) { this.CNPSno = CNPSno; }
 
-    public MaritalStatus getMartialStatus() { return this.martialStatus; }
-    public void setMartialStatus(MaritalStatus martialStatus) { this.martialStatus = martialStatus; }
+    public MaritalStatus getMaritalStatus() { return this.maritalStatus; }
+    public void setMaritalStatus(MaritalStatus maritalStatus) { this.maritalStatus = maritalStatus; }
 
     // TODO: Person
     // TODO: Fix This.

@@ -23,7 +23,9 @@ public class HibernateTest {
         //creating transaction object
         Transaction t = session.beginTransaction();
 
-        Employee emp = new Employee("3334", "User Name");
+        Employee emp = new Employee();
+        emp.setId("3334");
+        emp.setName("User Name");
         emp.setStatus(EmploymentStatus.FULL_TIME);
         emp.setTitle("Master");
 
