@@ -5,6 +5,7 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 import org.sil.cmb.employee_svc.gson.DateTimeDeserializer;
 import org.sil.cmb.employee_svc.gson.DateTimeSerializer;
+import org.sil.cmb.employee_svc.gson.GSONFactory;
 
 import java.lang.reflect.Type;
 
@@ -160,10 +161,7 @@ public class EmployeeTest {
 
     @Test
     public void testObjectSerializationWithGson() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(DateTime.class, new DateTimeDeserializer());
-        gsonBuilder.registerTypeAdapter(DateTime.class, new DateTimeSerializer());
-        Gson gson = gsonBuilder.create();
+        Gson gson = GSONFactory.getInstance();
 
         Employee baseEmployee = new Employee();
 
@@ -212,10 +210,7 @@ public class EmployeeTest {
 
     @Test
     public void testObjectDeserializationWithGson() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(DateTime.class, new DateTimeDeserializer());
-        gsonBuilder.registerTypeAdapter(DateTime.class, new DateTimeSerializer());
-        Gson gson = gsonBuilder.create();
+        Gson gson = GSONFactory.getInstance();
 
         String expectedName = "Bob Smith";
         String expectedTitle = "A Title";
