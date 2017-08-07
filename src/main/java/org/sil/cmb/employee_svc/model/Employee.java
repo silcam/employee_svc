@@ -1,19 +1,24 @@
-package org.sil.cmb.employee_svc;
+package org.sil.cmb.employee_svc.model;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Employee {
 
+    @Id
     private final String id;
     private String name; // TODO given/surnames
     private EmploymentStatus status;
     private String title;
     private String department;
-    private Employee supervisor;
-    private Gender gender;
-    private String birthDate;
-    private String CNPSno;
-    private MaritalStatus martialStatus;
-    private String[] children;
-    private boolean isStudent;
+//    private Employee supervisor;
+//    private Gender gender;
+//    private String birthDate;
+//    private String CNPSno;
+//    private MaritalStatus martialStatus;
+//    private String[] children;
+//    private boolean isStudent;
 
     public Employee(String id, String name) {
         this.name = name;

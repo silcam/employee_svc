@@ -1,9 +1,10 @@
 package org.sil.cmb.employee_svc;
 
+import org.sil.cmb.employee_svc.model.Employee;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 /**

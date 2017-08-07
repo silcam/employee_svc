@@ -1,6 +1,9 @@
-package org.sil.cmb.employee_svc;
+package org.sil.cmb.employee_svc.model;
 
 import org.junit.Test;
+import org.sil.cmb.employee_svc.model.Employee;
+import org.sil.cmb.employee_svc.model.EmploymentStatus;
+
 import static org.junit.Assert.*;
 
 public class EmployeeTest {
