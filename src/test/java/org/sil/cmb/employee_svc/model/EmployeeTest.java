@@ -3,6 +3,8 @@ package org.sil.cmb.employee_svc.model;
 import com.google.gson.*;
 import org.joda.time.DateTime;
 import org.junit.Test;
+import org.sil.cmb.employee_svc.gson.DateTimeDeserializer;
+import org.sil.cmb.employee_svc.gson.DateTimeSerializer;
 
 import java.lang.reflect.Type;
 
@@ -260,18 +262,5 @@ public class EmployeeTest {
         assertEquals("no 3", employeesChildren[2]);
 
         assertEquals(new DateTime("1966-02-27").toString(), createdEmployee.getBirthDate());
-    }
-
-    private class DateTimeDeserializer implements JsonDeserializer<DateTime> {
-        public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-            return new DateTime(json.getAsJsonPrimitive().getAsString());
-        }
-    }
-
-    private class DateTimeSerializer implements JsonSerializer<DateTime> {
-        public JsonElement serialize(DateTime src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(src.toString());
-        }
     }
 }
