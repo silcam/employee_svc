@@ -12,7 +12,8 @@ import javax.ws.rs.core.Response;
 
 import java.util.ArrayList;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 public class EmployeeResourceTests extends JerseyTest {
 
@@ -28,7 +29,7 @@ public class EmployeeResourceTests extends JerseyTest {
 
     @Test
     public void testGetAllWithCreateAndDelete() {
-        String name = "testing name";
+        String expectedName = "testing name";
         String id = "1234";
 
         EmployeeContainer.employees = new ArrayList<Employee>();
@@ -37,9 +38,11 @@ public class EmployeeResourceTests extends JerseyTest {
         assertEquals(200, output.getStatus());
         assertEquals("0", output.readEntity(String.class));
 
-        output = target("/employee/" + id).request().put(Entity.json(new String(name)));
+        String json = "{id: '1234', name: '" + expectedName + "'}";
+
+        output = target("/employee/" + id).request().put(Entity.json(json));
         assertEquals(201, output.getStatus());
-        assertEquals("created " + id, output.readEntity(String.class));
+        assertThat(output.readEntity(String.class), containsString("\"name\":\"" + expectedName + "\""));
 
         output = target("/employee").request().get();
         assertEquals(200, output.getStatus());
@@ -47,7 +50,7 @@ public class EmployeeResourceTests extends JerseyTest {
 
         output = target("/employee/" + id).request().get();
         assertEquals(200, output.getStatus());
-        assertEquals("testing name", output.readEntity(String.class));
+        assertEquals(expectedName, output.readEntity(String.class));
 
         output = target("/employee").request().get();
         assertEquals(200, output.getStatus());
@@ -68,9 +71,40 @@ public class EmployeeResourceTests extends JerseyTest {
 
     @Test
     public void testPut() {
-        Response output = target("/employee/2345").request().put(Entity.json(new String()));
+        // Object to be stored.
+
+        String expectedName = "Bob Smith";
+        String expectedTitle = "A Title";
+        String expectedDepartment = "Computer Services";
+        String expectedCNPSNo = "123456789";
+
+        String json =
+                "{ " +
+                  "name: '" + expectedName + "'," +
+                  "status: 'FULL_TIME'," +
+                  "title: '" + expectedTitle + "'," +
+                  "department: '" + expectedDepartment + "'," +
+                  "supervisor: {" +
+                    "'id': '1234'," +
+                    "'name': 'Bob Supervisor'" +
+                  "}," +
+                  "gender: 'MALE', " +
+                  "CNPSno: '" + expectedCNPSNo + "'," +
+                  "maritalStatus: 'SINGLE'," +
+                  "children: [" +
+                    "'no 1'," +
+                    "'no 2'," +
+                    "'no 3'" +
+                  "]," +
+                  "birthDate: '1966-02-27'" +
+                "}";
+
+        Response output = target("/employee/2345").request().put(Entity.json(json));
         assertEquals(201, output.getStatus());
-        assertEquals("created 2345", output.readEntity(String.class));
+        String jsonOutput = output.readEntity(String.class);
+
+        // TODO: rinse, repeat
+        assertThat(jsonOutput, containsString("\"status\":\"FULL_TIME\""));
     }
 
 

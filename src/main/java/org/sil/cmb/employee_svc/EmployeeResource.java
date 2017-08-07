@@ -1,6 +1,7 @@
 package org.sil.cmb.employee_svc;
 
 import com.google.gson.Gson;
+import org.sil.cmb.employee_svc.gson.GSONFactory;
 import org.sil.cmb.employee_svc.model.Employee;
 
 import javax.ws.rs.*;
@@ -41,9 +42,13 @@ public class EmployeeResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handlePut(@PathParam("id") String id, String body) {
-        handleCreate(id, body);
+        Gson gson = GSONFactory.getInstance();
 
-        Response response = Response.status(201).entity("created " + id).build();
+        Employee employee = handleCreate(id, body);
+
+        String serializedEmployee = gson.toJson(employee);
+
+        Response response = Response.status(201).entity(serializedEmployee).build();
         return response;
     }
 
@@ -95,14 +100,13 @@ public class EmployeeResource {
     }
 
 
-    private void handleCreate(String id, String body) {
-        Employee employee = new Employee();
-        employee.setId(id);
-        employee.setName(body);
+    private Employee handleCreate(String id, String body) {
+        Gson gson = GSONFactory.getInstance();
 
-//        Gson gson = new Gson();
-//        Employee employee = gson.fromJson(body, Employee.class);
+        // TODO: validation
 
+        Employee employee = gson.fromJson(body, Employee.class);
         EmployeeContainer.employees.add(employee);
+        return employee;
     }
 }
