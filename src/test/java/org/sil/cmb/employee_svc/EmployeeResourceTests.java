@@ -208,21 +208,21 @@ public class EmployeeResourceTests extends JerseyTest {
         }
 
         String json =
-        "{ " +
-          "name: '" + expectedName + "'," +
-          "status: 'FULL_TIME'," +
-          "title: '" + expectedTitle + "'," +
-          "department: '" + expectedDepartment + "'," +
-          "gender: 'MALE', " +
-          "CNPSno: '" + expectedCNPSNo + "'," +
-          "maritalStatus: 'SINGLE'," +
-          "children: [" +
-            "'no 1'," +
-            "'no 2'," +
-            "'no 3'" +
-          "]," +
-          "birthDate: '1966-02-27'" + expectedIdJson +
-        "}";
+            "{ " +
+              "name: '" + expectedName + "'," +
+              "status: 'FULL_TIME'," +
+              "title: '" + expectedTitle + "'," +
+              "department: '" + expectedDepartment + "'," +
+              "gender: 'MALE', " +
+              "CNPSno: '" + expectedCNPSNo + "'," +
+              "maritalStatus: 'SINGLE'," +
+              "children: [" +
+                "'no 1'," +
+                "'no 2'," +
+                "'no 3'" +
+              "]," +
+              "birthDate: '1966-02-27'" + expectedIdJson +
+            "}";
 
         return json;
     }
