@@ -62,7 +62,16 @@ public class EmployeeResourceTests extends JerseyTest {
         // clean up
         output = target("/employee/" + id).request().delete();
         assertEquals(200, output.getStatus());
-        assertEquals("deleted " + id, output.readEntity(String.class));
+        assertThat(output.readEntity(String.class).length(), is(0));
+
+        // get by Id should now fail.
+        output = target("/employee/" + id).request().get();
+        assertThat(output.getStatus(), is(404));
+
+        // nothing should be return by getAll.
+        output = target("/employee/").request().get();
+        assertEquals(200, output.getStatus());
+        assertEquals("0", output.readEntity(String.class));
     }
 
     @Test
@@ -79,27 +88,7 @@ public class EmployeeResourceTests extends JerseyTest {
         String expectedTitle = "A Title";
         String expectedDepartment = "Computer Services";
         String expectedCNPSNo = "123456789";
-
-        String json =
-                "{ " +
-                          "name: '" + expectedName + "'," +
-                          "status: 'FULL_TIME'," +
-                          "title: '" + expectedTitle + "'," +
-                          "department: '" + expectedDepartment + "'," +
-                          "supervisor: {" +
-                            "'id': '5555'," +
-                            "'name': 'Bob Supervisor'" +
-                          "}," +
-                          "gender: 'MALE', " +
-                          "CNPSno: '" + expectedCNPSNo + "'," +
-                          "maritalStatus: 'SINGLE'," +
-                          "children: [" +
-                            "'no 1'," +
-                            "'no 2'," +
-                            "'no 3'" +
-                          "]," +
-                          "birthDate: '1966-02-27'" +
-                        "}";
+        String json = getJson(expectedName, expectedTitle, expectedDepartment, expectedCNPSNo);
 
         // Send post request to create.
         Response output = target("/employee/").request().post(Entity.json(json));
@@ -137,27 +126,8 @@ public class EmployeeResourceTests extends JerseyTest {
         String expectedTitle = "A Title";
         String expectedDepartment = "Computer Services";
         String expectedCNPSNo = "123456789";
+        String json = getJson(expectedId, expectedName, expectedTitle, expectedDepartment, expectedCNPSNo);
 
-        String json =
-                "{ " +
-                  "name: '" + expectedName + "'," +
-                  "status: 'FULL_TIME'," +
-                  "title: '" + expectedTitle + "'," +
-                  "department: '" + expectedDepartment + "'," +
-                  "supervisor: {" +
-                    "'id': '1234'," +
-                    "'name': 'Bob Supervisor'" +
-                  "}," +
-                  "gender: 'MALE', " +
-                  "CNPSno: '" + expectedCNPSNo + "'," +
-                  "maritalStatus: 'SINGLE'," +
-                  "children: [" +
-                    "'no 1'," +
-                    "'no 2'," +
-                    "'no 3'" +
-                  "]," +
-                  "birthDate: '1966-02-27'" +
-                "}";
 
         Response output = target("/employee/" + expectedId).request().put(Entity.json(json));
         assertEquals(201, output.getStatus());
@@ -174,16 +144,86 @@ public class EmployeeResourceTests extends JerseyTest {
 
 
     @Test
-    public void testPost() {
-        Response output = target("/employee/3456").request().post(Entity.json(new String()));
-        assertEquals(200, output.getStatus());
-        assertEquals("post for 3456", output.readEntity(String.class));
-    }
+    public void testPostToModify() {
 
+        // Created an object to modify later.
+        String expectedName = "Bob Smith";
+        String expectedTitle = "A Title";
+        String expectedDepartment = "Computer Services";
+        String expectedCNPSNo = "123456789";
+        String json = getJson(expectedName, expectedTitle, expectedDepartment, expectedCNPSNo);
+
+
+        Response output = target("/employee/").request().post(Entity.json(json));
+        assertEquals(201, output.getStatus());
+        String jsonOutput = output.readEntity(String.class);
+
+        Gson gson = GSONFactory.getInstance();
+        Employee createdEmployee = gson.fromJson(jsonOutput, Employee.class);
+        String createdEmployeeId = createdEmployee.getId();
+
+        // Modify the object.
+        String newName = "NEW NAME";
+        createdEmployee.setName(newName);
+        createdEmployee.setStatus(EmploymentStatus.PART_TIME);
+
+        String modifiedJson = gson.toJson(createdEmployee);
+        output = target("/employee/" + createdEmployeeId).request().post(Entity.json(modifiedJson));
+
+        assertEquals(200, output.getStatus());
+        String postJsonOutput = output.readEntity(String.class);
+
+        Employee modifiedEmployee = gson.fromJson(postJsonOutput, Employee.class);
+
+        assertThat(modifiedEmployee.getId(), is(notNullValue()));
+        assertThat(modifiedEmployee.getId(), is(createdEmployeeId));
+        assertThat(modifiedEmployee.getName(), is(newName));
+        assertThat(modifiedEmployee.getStatus(), is(EmploymentStatus.PART_TIME));
+    }
 
     @Test
     public void testDeleteNonExistentId() {
         Response output = target("/employee/4567").request().delete();
         assertEquals(404, output.getStatus());
+    }
+
+
+    private String getJson(String expectedName, String expectedTitle, String expectedDepartment,
+                           String expectedCNPSNo) {
+
+        return getJson(null, expectedName, expectedTitle, expectedDepartment, expectedCNPSNo);
+    }
+
+    private String getJson(String expectedId, String expectedName, String expectedTitle,
+                           String expectedDepartment, String expectedCNPSNo) {
+
+        String expectedIdJson = "";
+
+        if (expectedId != null) {
+            expectedIdJson = ", id: \"" + expectedId + "\"";
+        }
+
+        String json =
+        "{ " +
+          "name: '" + expectedName + "'," +
+          "status: 'FULL_TIME'," +
+          "title: '" + expectedTitle + "'," +
+          "department: '" + expectedDepartment + "'," +
+          "supervisor: {" +
+            "'id': '1234'," +
+            "'name': 'Bob Supervisor'" +
+          "}," +
+          "gender: 'MALE', " +
+          "CNPSno: '" + expectedCNPSNo + "'," +
+          "maritalStatus: 'SINGLE'," +
+          "children: [" +
+            "'no 1'," +
+            "'no 2'," +
+            "'no 3'" +
+          "]," +
+          "birthDate: '1966-02-27'" + expectedIdJson +
+        "}";
+
+        return json;
     }
 }

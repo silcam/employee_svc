@@ -10,13 +10,14 @@ import javax.ws.rs.core.Response;
 import java.util.Iterator;
 import java.util.Random;
 
-/**
- * Root resource (exposed at "myresource" path)
- */
 @Path("/employee")
 public class EmployeeResource {
 
-    // retrieve all objects
+    /**
+     *  Retrieve all objects
+     *
+     *  TODO: pagination, etc.
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleGet() {
@@ -24,7 +25,9 @@ public class EmployeeResource {
         return response;
     }
 
-    // retrieve a specific object
+    /**
+     *  Retrieve a specific object
+     */
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -42,7 +45,9 @@ public class EmployeeResource {
         }
     }
 
-    // Create an object if you know the expected id.
+    /**
+     * Create an object if you know the expected id.
+     */
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -58,7 +63,9 @@ public class EmployeeResource {
         return response;
     }
 
-    // Create an object without a known id
+    /**
+     *  Create an object without a known id
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -74,16 +81,27 @@ public class EmployeeResource {
     }
 
 
-    // Edit/Modify an object
+    /**
+     *  Edit/Modify an object
+     */
     @POST
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String handlePostModify(@PathParam("id") String id) {
-        return "post for " + id;
+    public Response handlePostModify(@PathParam("id") String id, String body) {
+        Gson gson = GSONFactory.getInstance();
+
+        // TODO: validation?
+        Employee modifiedEmployee = handleEdit(id, body);
+        String outputJson = gson.toJson(modifiedEmployee);
+
+        Response response = Response.ok().entity(outputJson).build();
+        return response;
     }
 
-    // Delete an object
+    /**
+     *   Delete an object
+     */
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -93,7 +111,7 @@ public class EmployeeResource {
             Response response = Response.status(404).build();
             return response;
         } else {
-            Response response = Response.ok().entity("deleted " + id).build();
+            Response response = Response.ok().build();
             return response;
         }
     }
@@ -113,7 +131,7 @@ public class EmployeeResource {
     private Employee handleDeleteById(String id) {
         Iterator<Employee> employeesIter = EmployeeContainer.employees.iterator();
 
-        if (employeesIter.hasNext()) {
+        while (employeesIter.hasNext()) {
             Employee employee = employeesIter.next();
             if (id != null && id.equals(employee.getId())) {
                 EmployeeContainer.employees.remove(employee);
@@ -138,6 +156,26 @@ public class EmployeeResource {
 
         EmployeeContainer.employees.add(employee);
         return employee;
+    }
+
+    private Employee handleEdit(String id, String body) {
+        Gson gson = GSONFactory.getInstance();
+
+        Employee modifiedEmployee = gson.fromJson(body, Employee.class);
+        // TODO: what is correct behavior?
+        modifiedEmployee.setId(id);
+
+        Iterator<Employee> employeesIter = EmployeeContainer.employees.iterator();
+
+        while (employeesIter.hasNext()) {
+            Employee employee = employeesIter.next();
+            if (id != null && id.equals(employee.getId())) {
+                EmployeeContainer.employees.remove(employee);
+                EmployeeContainer.employees.add(modifiedEmployee);
+                return modifiedEmployee;
+            }
+        }
+        return null;
     }
 
     // TODO: remove this, replace with auto-increment IDs.
