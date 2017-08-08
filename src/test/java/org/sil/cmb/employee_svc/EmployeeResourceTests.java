@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
+import org.hibernate.Session;
 import org.junit.Test;
 import org.sil.cmb.employee_svc.gson.GSONFactory;
 import org.sil.cmb.employee_svc.model.Employee;
@@ -12,7 +13,6 @@ import org.sil.cmb.employee_svc.model.EmploymentStatus;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
@@ -23,7 +23,7 @@ public class EmployeeResourceTests extends JerseyTest {
     @Override
     public Application configure() {
         // change if you want debugging info
-        if (false) {
+        if (true) {
             enable(TestProperties.LOG_TRAFFIC);
             enable(TestProperties.DUMP_ENTITY);
         }
@@ -35,7 +35,11 @@ public class EmployeeResourceTests extends JerseyTest {
         String expectedName = "testing name";
         String id = "1234";
 
-        EmployeeContainer.employees = new ArrayList<Employee>();
+        // TODO: delete all before beginning test.
+        Session session = org.sil.cmb.employee_svc.hibernate.SessionFactory.getSession();
+        session.createQuery("DELETE FROM Employee").executeUpdate();
+        session.close();
+
 
         Response output = target("/employee/").request().get();
         assertEquals(200, output.getStatus());
@@ -209,10 +213,6 @@ public class EmployeeResourceTests extends JerseyTest {
           "status: 'FULL_TIME'," +
           "title: '" + expectedTitle + "'," +
           "department: '" + expectedDepartment + "'," +
-          "supervisor: {" +
-            "'id': '1234'," +
-            "'name': 'Bob Supervisor'" +
-          "}," +
           "gender: 'MALE', " +
           "CNPSno: '" + expectedCNPSNo + "'," +
           "maritalStatus: 'SINGLE'," +

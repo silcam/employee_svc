@@ -4,6 +4,7 @@ import org.joda.time.DateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import java.util.ArrayList;
 
 @Entity
@@ -15,6 +16,7 @@ public class Employee {
     private EmploymentStatus status;
     private String title;
     private String department;
+    @ManyToOne(optional=true)
     private Employee supervisor;
     private Gender gender;
     private DateTime birthDate;

@@ -1,8 +1,13 @@
 package org.sil.cmb.employee_svc;
 
 import com.google.gson.Gson;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.criterion.Projections;
 import org.sil.cmb.employee_svc.gson.GSONFactory;
+import org.sil.cmb.employee_svc.hibernate.SessionFactory;
 import org.sil.cmb.employee_svc.model.Employee;
+import org.sil.cmb.employee_svc.model.EmploymentStatus;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -14,26 +19,28 @@ import java.util.Random;
 public class EmployeeResource {
 
     /**
-     *  Retrieve all objects
-     *
-     *  TODO: pagination, etc.
+     * Retrieve all objects
+     * <p>
+     * TODO: pagination, etc.
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleGet() {
-        Response response = Response.ok().entity(String.valueOf(EmployeeContainer.employees.size())).build();
+        int noEmployees = countEmployees();
+
+        Response response = Response.ok().entity(String.valueOf(noEmployees)).build();
         return response;
     }
 
     /**
-     *  Retrieve a specific object
+     * Retrieve a specific object
      */
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleGetbyId(@PathParam("id") String id) {
         Gson gson = GSONFactory.getInstance();
-        Employee employee = handleGetById(id);
+        Employee employee = getEmployeeById(id);
 
         if (employee == null) {
             Response response = Response.status(404).build();
@@ -55,7 +62,7 @@ public class EmployeeResource {
     public Response handlePut(@PathParam("id") String id, String body) {
         Gson gson = GSONFactory.getInstance();
 
-        Employee employee = handleCreate(id, body);
+        Employee employee = createEmployee(id, body);
 
         String serializedEmployee = gson.toJson(employee);
 
@@ -64,7 +71,7 @@ public class EmployeeResource {
     }
 
     /**
-     *  Create an object without a known id
+     * Create an object without a known id
      */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -72,7 +79,7 @@ public class EmployeeResource {
     public Response handlePostCreate(String body) {
         Gson gson = GSONFactory.getInstance();
 
-        Employee createdEmployee = handleCreate(body);
+        Employee createdEmployee = createEmployee(body);
 
         String serializedEmployee = gson.toJson(createdEmployee);
 
@@ -82,7 +89,7 @@ public class EmployeeResource {
 
 
     /**
-     *  Edit/Modify an object
+     * Edit/Modify an object
      */
     @POST
     @Path("/{id}")
@@ -92,7 +99,7 @@ public class EmployeeResource {
         Gson gson = GSONFactory.getInstance();
 
         // TODO: validation?
-        Employee modifiedEmployee = handleEdit(id, body);
+        Employee modifiedEmployee = editEmployee(id, body);
         String outputJson = gson.toJson(modifiedEmployee);
 
         Response response = Response.ok().entity(outputJson).build();
@@ -100,13 +107,13 @@ public class EmployeeResource {
     }
 
     /**
-     *   Delete an object
+     * Delete an object
      */
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleDelete(@PathParam("id") String id) {
-        Employee employee = handleDeleteById(id);
+        Employee employee = deleteEmployeeById(id);
         if (employee == null) {
             Response response = Response.status(404).build();
             return response;
@@ -116,66 +123,106 @@ public class EmployeeResource {
         }
     }
 
-    private Employee handleGetById(String id) {
-        Iterator<Employee> employeesIter = EmployeeContainer.employees.iterator();
+    private Employee getEmployeeById(String id) {
+        Session session = SessionFactory.getSession();
+        Employee employee = null;
 
-        while (employeesIter.hasNext()) {
-            Employee employee = employeesIter.next();
-            if (id != null && id.equals(employee.getId())) {
-                return employee;
-            }
+        try {
+            // TODO: null checking, type checking, etc.
+            employee = (Employee) session.get(Employee.class, id);
+        } finally {
+            session.close();
         }
-        return null;
-    }
-
-    private Employee handleDeleteById(String id) {
-        Iterator<Employee> employeesIter = EmployeeContainer.employees.iterator();
-
-        while (employeesIter.hasNext()) {
-            Employee employee = employeesIter.next();
-            if (id != null && id.equals(employee.getId())) {
-                EmployeeContainer.employees.remove(employee);
-                return employee;
-            }
-        }
-        return null;
-    }
-
-    private Employee handleCreate(String body) {
-        String newId = createId();
-        return handleCreate(newId, body);
-    }
-
-    private Employee handleCreate(String id, String body) {
-        Gson gson = GSONFactory.getInstance();
-
-        // TODO: validation
-
-        Employee employee = gson.fromJson(body, Employee.class);
-        employee.setId(id);
-
-        EmployeeContainer.employees.add(employee);
         return employee;
     }
 
-    private Employee handleEdit(String id, String body) {
+    private Employee deleteEmployeeById(String id) {
+        Session session = SessionFactory.getSession();
+        Employee employee = null;
+        Transaction txn = null;
+        try {
+            txn = session.beginTransaction();
+            employee = (Employee) session.get(Employee.class, id);
+            session.delete(employee);
+            txn.commit();
+        } catch (Exception e) {
+            // TODO FIXME
+            if (txn != null) txn.rollback();
+        } finally {
+            session.close();
+        }
+
+        return employee;
+    }
+
+    private Employee createEmployee(String body) {
+        String newId = createId();
+        return createEmployee(newId, body);
+    }
+
+    private Employee createEmployee(String id, String body) {
         Gson gson = GSONFactory.getInstance();
+
+        Session session = SessionFactory.getSession();
+        Employee employee = null;
+
+        Transaction txn = null;
+        try {
+            txn = session.beginTransaction();
+
+            employee = gson.fromJson(body, Employee.class);
+            employee.setId(id);
+
+            session.save(employee);
+
+            txn.commit();
+        } catch (Exception e) {
+            if (txn != null) txn.rollback();
+        } finally {
+            session.close();
+        }
+
+        return employee;
+    }
+
+    private Employee editEmployee(String id, String body) {
+        Gson gson = GSONFactory.getInstance();
+        Session session = SessionFactory.getSession();
 
         Employee modifiedEmployee = gson.fromJson(body, Employee.class);
         // TODO: what is correct behavior?
         modifiedEmployee.setId(id);
 
-        Iterator<Employee> employeesIter = EmployeeContainer.employees.iterator();
+        Transaction txn = null;
+        try {
+            txn = session.beginTransaction();
 
-        while (employeesIter.hasNext()) {
-            Employee employee = employeesIter.next();
-            if (id != null && id.equals(employee.getId())) {
-                EmployeeContainer.employees.remove(employee);
-                EmployeeContainer.employees.add(modifiedEmployee);
-                return modifiedEmployee;
-            }
+            session.save(modifiedEmployee);
+
+            txn.commit();
+        } catch (Exception e) {
+            if (txn != null) txn.rollback();
+        } finally {
+            session.close();
         }
-        return null;
+
+        return modifiedEmployee;
+    }
+
+    private int countEmployees() {
+        Session session = SessionFactory.getSession();
+        Transaction txn = null;
+        int numEmployees = 0;
+
+        try {
+            Number num = (Number) session.createCriteria(Employee.class).
+                    setProjection(Projections.rowCount()).uniqueResult();
+            numEmployees = num.intValue();
+        } finally {
+            session.close();
+        }
+
+        return numEmployees;
     }
 
     // TODO: remove this, replace with auto-increment IDs.
