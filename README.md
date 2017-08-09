@@ -10,6 +10,22 @@ Basic shared REST service for employee data.
 * Jersey/JAX-RS, Gson, Hibernate
 ### Postgresql
 
+Running Service:
+---------------
+
+### Database (Postgres)
+
+Create role and db per the hibernate.cfg.xml
+
+### Starting the Service
+
+(you need maven)
+
+Run:
+```
+mvn jetty:run
+```
+
 Service Calls:
 --------------
 
