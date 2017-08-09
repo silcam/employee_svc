@@ -1,6 +1,7 @@
 package org.sil.cmb.employee_svc;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
@@ -13,6 +14,10 @@ import org.sil.cmb.employee_svc.model.EmploymentStatus;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
@@ -32,6 +37,8 @@ public class EmployeeResourceTests extends JerseyTest {
 
     @Test
     public void testGetAllWithCreateAndDelete() {
+        Gson gson = GSONFactory.getInstance();
+
         String expectedName = "testing name";
         String id = "1234";
 
@@ -43,7 +50,11 @@ public class EmployeeResourceTests extends JerseyTest {
 
         Response output = target("/employee/").request().get();
         assertEquals(200, output.getStatus());
-        assertEquals("0", output.readEntity(String.class));
+
+        String outputJson = output.readEntity(String.class);
+        List<Employee> employeeList = gson.fromJson(outputJson, ArrayList.class);
+        assertThat(employeeList.size(), is(0));
+
 
         String json = "{id: '1234', name: '" + expectedName + "'}";
 
@@ -53,15 +64,18 @@ public class EmployeeResourceTests extends JerseyTest {
 
         output = target("/employee").request().get();
         assertEquals(200, output.getStatus());
-        assertEquals("1", output.readEntity(String.class));
+
+        // read the output (ugh!)
+        outputJson = output.readEntity(String.class);
+        Type expectedType = new TypeToken<ArrayList<Employee>>(){}.getType();
+        ArrayList<Employee> employeeArrayList = gson.fromJson(outputJson, expectedType);
+        assertThat(employeeArrayList.size(), is(1));
+        assertThat(employeeArrayList.get(0).getName(), is(expectedName));
 
         output = target("/employee/" + id).request().get();
         assertEquals(200, output.getStatus());
         assertThat(output.readEntity(String.class), containsString(expectedName));
 
-        output = target("/employee").request().get();
-        assertEquals(200, output.getStatus());
-        assertEquals("1", output.readEntity(String.class));
 
         // clean up
         output = target("/employee/" + id).request().delete();
@@ -75,7 +89,10 @@ public class EmployeeResourceTests extends JerseyTest {
         // nothing should be return by getAll.
         output = target("/employee/").request().get();
         assertEquals(200, output.getStatus());
-        assertEquals("0", output.readEntity(String.class));
+
+        outputJson = output.readEntity(String.class);
+        employeeList = gson.fromJson(outputJson, ArrayList.class);
+        assertThat(employeeList.size(), is(0));
     }
 
     @Test

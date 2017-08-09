@@ -17,11 +17,11 @@ Service Calls:
 $ curl -i "http://localhost:8080/webapi/employee"
 
 HTTP/1.1 200 OK
-Content-Length: 1
+Content-Length: 2
 Content-Type: application/json
 Server: Jetty(8.1.16.v20140903)
 
-0
+[]
 
 $ curl i -H"Content-Type: application/json" -d"{ name: 'Test Name', department: 'Test Department'}" -X POST "http://localhost:8080/webapi/employee"
 HTTP/1.1 201 Created
@@ -33,11 +33,11 @@ Server: Jetty(8.1.16.v20140903)
 
 $ curl -i "http://localhost:8080/webapi/employee"
 HTTP/1.1 200 OK
-Content-Length: 1
+Content-Length: 67
 Content-Type: application/json
 Server: Jetty(8.1.16.v20140903)
 
-1
+[{"id":"67688","name":"Test Name","department":"Test Department"}]
 
 $ curl -i "http://localhost:8080/webapi/employee/67688/"
 HTTP/1.1 200 OK

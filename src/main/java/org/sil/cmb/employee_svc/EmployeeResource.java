@@ -12,7 +12,9 @@ import org.sil.cmb.employee_svc.model.EmploymentStatus;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 @Path("/employee")
@@ -26,9 +28,14 @@ public class EmployeeResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response handleGet() {
-        int noEmployees = countEmployees();
+        Gson gson = GSONFactory.getInstance();
+        List allEmployees = getAllEmployees();
 
-        Response response = Response.ok().entity(String.valueOf(noEmployees)).build();
+        if (allEmployees == null) {
+            allEmployees = new ArrayList();
+        }
+
+        Response response = Response.ok().entity(gson.toJson(allEmployees)).build();
         return response;
     }
 
@@ -209,20 +216,17 @@ public class EmployeeResource {
         return modifiedEmployee;
     }
 
-    private int countEmployees() {
+    private List getAllEmployees() {
         Session session = SessionFactory.getSession();
-        Transaction txn = null;
-        int numEmployees = 0;
+        List employees = null;
 
         try {
-            Number num = (Number) session.createCriteria(Employee.class).
-                    setProjection(Projections.rowCount()).uniqueResult();
-            numEmployees = num.intValue();
+            employees = (List) session.createCriteria(Employee.class).list();
         } finally {
             session.close();
         }
 
-        return numEmployees;
+        return employees;
     }
 
     // TODO: remove this, replace with auto-increment IDs.
