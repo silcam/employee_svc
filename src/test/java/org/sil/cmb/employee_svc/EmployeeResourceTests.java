@@ -200,6 +200,18 @@ public class EmployeeResourceTests extends JerseyTest {
         assertThat(modifiedEmployee.getId(), is(createdEmployeeId));
         assertThat(modifiedEmployee.getName(), is(newName));
         assertThat(modifiedEmployee.getStatus(), is(EmploymentStatus.PART_TIME));
+
+
+        // reissue get and verify again.
+        output = target("/employee/" + modifiedEmployee.getId()).request().get();
+        assertEquals(200, output.getStatus());
+        String getJsonOutput = output.readEntity(String.class);
+        Employee retrievedEmployee = gson.fromJson(getJsonOutput, Employee.class);
+
+        assertThat(retrievedEmployee.getId(), is(notNullValue()));
+        assertThat(retrievedEmployee.getId(), is(createdEmployeeId));
+        assertThat(retrievedEmployee.getName(), is(newName));
+        assertThat(retrievedEmployee.getStatus(), is(EmploymentStatus.PART_TIME));
     }
 
     @Test

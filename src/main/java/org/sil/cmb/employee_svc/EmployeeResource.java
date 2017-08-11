@@ -184,7 +184,10 @@ public class EmployeeResource {
 
             txn.commit();
         } catch (Exception e) {
+            System.err.println("Something went wrong during createEmployee");
+            System.err.println(e);
             if (txn != null) txn.rollback();
+            throw e;
         } finally {
             session.close();
         }
@@ -204,11 +207,14 @@ public class EmployeeResource {
         try {
             txn = session.beginTransaction();
 
-            session.save(modifiedEmployee);
+            session.update(modifiedEmployee);
 
             txn.commit();
         } catch (Exception e) {
+            System.err.println("Something went wrong during editEmployee");
+            System.err.println(e);
             if (txn != null) txn.rollback();
+            throw e;
         } finally {
             session.close();
         }
